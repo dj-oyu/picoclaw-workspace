@@ -39,3 +39,16 @@
 ## .gitignore 方針
 - ホワイトリスト形式で必要ファイルだけ追跡
 - プロジェクト本体は各ディレクトリごとに独立リポジトリ運用を想定
+
+## プロジェクトの始め方
+基本の場所は `./projects/{project-title}` を推奨。
+
+例:
+```bash
+mkdir -p projects/sample-project
+cd projects/sample-project
+git init
+git branch -m main
+```
+
+ワークスペース側はホワイトリスト運用なので、各プロジェクトは独立リポジトリで管理する。
