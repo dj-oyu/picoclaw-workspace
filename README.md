@@ -52,3 +52,27 @@ git branch -m main
 ```
 
 ワークスペース側はホワイトリスト運用なので、各プロジェクトは独立リポジトリで管理する。
+
+## 今回のトラブルまとめ（2026-02-19）
+
+### 症状
+- Telegram で `テスト` を送ると、LLM 呼び出しが `400 invalid params, invalid chat setting (2013)` で失敗することがあった。
+- 起動時に `dial tcp 127.0.0.1:8787: connect: connection refused` が出ることがあった（プロキシ未起動時）。
+
+### 原因
+- 直接原因は API 接続断ではなく、**セッション履歴の不整合**。
+- `sessions/telegram_2038855069.json` の先頭に、対応する assistant の tool_call が存在しない `role=tool` メッセージ（orphan tool message）が残っていた。
+- この不正履歴が `messages` に含まれ、MiniMax 側で `invalid chat setting (2013)` になっていた。
+
+### 切り分けで分かったこと
+- MiniMax は `tools` 付きでも正常応答可能（curl 検証で 200）。
+- 失敗時の request/response はローカル中継プロキシで dump でき、`request_id` 単位で追跡可能。
+- `agent: LLM response without tool calls` はエラーではなく、通常の直接回答ログ。
+
+### 実施した対処
+- 壊れたセッション JSON を退避して再生成したところ、同症状は解消。
+- 通信調査用にローカル中継プロキシを導入し、リクエスト/レスポンスを dump 可能にした。
+
+### 運用メモ
+- 2013 が再発したら、まず最新 `proxy_dumps/*.request.json` の `messages` 並びを確認する。
+- 特に先頭付近の `role=tool` が orphan になっていないかを確認する。
