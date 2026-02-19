@@ -79,8 +79,8 @@ if [ ! -e $CONFIG_FILE ]; then
       "model": "MiniMax-M2.5",
       "workspace": "$CONFIG_DIR/workspace",
       "max_tokens": 8192,
-      "temperature": 0.7,
-      "max_tool_iterations": 10
+      "temperature": 1.0, 
+      "max_tool_iterations": 20
     }
   },
   "providers": {
@@ -93,7 +93,7 @@ if [ ! -e $CONFIG_FILE ]; then
     "telegram": {
       "enabled": true,
       "token": "ここにTelegramのボットトークン",
-      "allowFrom": []
+      "allow_from": []
     }
   }
 }
