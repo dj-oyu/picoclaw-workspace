@@ -14,6 +14,14 @@
 3. 実装ループ
 4. 共有
 
+## 静的チェック
+- 逐次実行して品質を確認する
+- 例: `ruff`, `tsc`, `eslint`, `clang-tidy`, `cppcheck` など
+- 実行方法は `uvx` / `pnpx` / `bunx` を使って都度選ぶ
+- 現状の検出結果:
+  - `gemini`, `uvx`, `pnpx`, `bunx`, `cppcheck` は利用可能
+  - `ruff`, `tsc`, `eslint`, `clang`, `clang-tidy`, `clang-format` は将来対応予定
+
 ## 参照ルール
 - `SOUL.md` が最優先
 - 運用上の詳細は `USER.md` を優先
