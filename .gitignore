@@ -1,0 +1,20 @@
+# Whitelist style: ignore everything by default
+*
+
+# Allow core docs
+!SOUL.md
+!AGENTS.md
+!IDENTITY.md
+!USER.md
+!TOOLS.md
+!HEARTBEAT.md
+!README.md
+
+# Allow skills and workflow config
+!skills/
+!skills/**
+!.github/
+!.github/**
+
+# Allow this ignore file itself
+!.gitignore
