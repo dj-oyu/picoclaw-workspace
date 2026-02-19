@@ -43,3 +43,16 @@
 ## 共有の仕方
 - 実装できたら、パスしたテストを短く列挙する
 - 迷いが出たら、候補を列挙して確認を取る
+
+## 公開前の必須ルール（エージェント用）
+- Public 公開の前に `autonomous-security-review` を必ず実行する
+
+## 新規プロジェクト手順（エージェント用）
+基本の場所は `./projects/{project-title}` を使う。
+
+1. `mkdir -p projects/<project-title>`
+2. `cd projects/<project-title>`
+3. `git init`
+4. `git branch -m main`
+
+ワークスペース側はホワイトリスト運用なので、各プロジェクトは独立リポジトリで管理する。
