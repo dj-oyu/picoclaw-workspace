@@ -18,3 +18,7 @@
 
 # Allow this ignore file itself
 !.gitignore
+
+# Allow update & setup script
+!setup.sh
+
