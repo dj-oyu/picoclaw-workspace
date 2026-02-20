@@ -19,6 +19,15 @@
 - 追加: `uv add <package>`
 - 実行: `uv run <script.py>` または `uv run -m <module>`
 - リンター/フォーマッター: `ruff`（導入済みなら `uv run ruff check .` / `uv run ruff format .`）
+- **NEVER use `pip` or bare `python`. Always go through `uv`.**
+
+#### Command Substitution Rules
+- ~~`pip install <pkg>`~~ → `uv add <pkg>` — MUST use uv for package installation
+- ~~`pip install -e .`~~ → `uv sync` — MUST use uv sync for editable installs
+- ~~`pip install -r requirements.txt`~~ → `uv add` per package — MUST manage deps in pyproject.toml
+- ~~`python script.py`~~ → `uv run script.py` — MUST run through uv
+- ~~`python -m pytest`~~ → `uv run -m pytest` — MUST run through uv
+- ~~`python -m <module>`~~ → `uv run -m <module>` — MUST run through uv
 
 ### TypeScript
 - 依存管理: `pnpm` か `bun`
@@ -27,6 +36,16 @@
 - 単発実行: `pnpx <tool>` / `bunx <tool>`
 - 例: `pnpx tsc --noEmit` / `bunx eslint .`
 - リンター/フォーマッター: `eslint` / `prettier`（ある場合は `pnpx` / `bunx` で実行）
+- **NEVER use `npm`, `npx`, or bare `node`. Always use `pnpm`/`bun` instead.**
+- **NEVER write JavaScript (.js/.mjs/.cjs). Always use TypeScript (.ts/.mts/.cts).**
+
+#### Command Substitution Rules
+- ~~`npm install <pkg>`~~ → `pnpm add <pkg>` / `bun add <pkg>` — MUST use pnpm or bun
+- ~~`npm install`~~ → `pnpm install` / `bun install` — MUST use pnpm or bun
+- ~~`npx <tool>`~~ → `pnpx <tool>` / `bunx <tool>` — MUST use pnpx or bunx
+- ~~`node script.js`~~ → `bun script.ts` — MUST use bun and TypeScript
+- ~~`node -e "..."`~~ → `bun -e "..."` — MUST use bun
+- ~~creating `.js`/`.mjs`/`.cjs`~~ → create `.ts`/`.mts`/`.cts` — MUST write TypeScript, NEVER JavaScript
 
 ### Go
 - モジュール: `go mod init`, `go get`
@@ -36,6 +55,14 @@
 ### シェル
 - 短命・単発用途に限定
 - 破壊的操作は必ず事前確認
+
+## Prohibited Commands
+- **NEVER use `pip` or `pip install` directly.** Always use `uv add` instead.
+- **NEVER run `python` or `python3` directly.** Always use `uv run` instead.
+- **NEVER use `npm`, `npm install`, or `npx`.** Always use `pnpm` or `bun` instead.
+- **NEVER run `node` directly.** Always use `bun` instead.
+- **NEVER write plain JavaScript (.js/.mjs/.cjs).** Always use TypeScript (.ts/.mts/.cts).
+- These rules apply unconditionally — including retries after timeouts or errors.
 
 ## 現時点の制約
 - 特になし
