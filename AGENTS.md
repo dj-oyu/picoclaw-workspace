@@ -46,6 +46,7 @@
 
 ## 公開前の必須ルール（エージェント用）
 - Public 公開の前に `autonomous-security-review` を必ず実行する
+- **NEVER push to a public repository without running `autonomous-security-review` first. No exceptions.**
 
 ## 新規プロジェクト手順（エージェント用）
 基本の場所は `./projects/{project-title}` を使う。
@@ -56,3 +57,5 @@
 4. `git branch -m main`
 
 ワークスペース側はホワイトリスト運用なので、各プロジェクトは独立リポジトリで管理する。
+- **MUST create new projects under `./projects/{project-title}`. NEVER create projects outside this directory.**
+- **MUST initialize each project as an independent git repository. NEVER commit project files to the workspace repo.**
