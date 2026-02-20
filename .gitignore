@@ -10,6 +10,10 @@
 !HEARTBEAT.md
 !README.md
 
+# Allow templates
+!templates/
+!templates/**
+
 # Allow skills and workflow config
 !skills/
 !skills/**

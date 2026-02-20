@@ -53,9 +53,11 @@
 
 1. `mkdir -p projects/<project-title>`
 2. `cd projects/<project-title>`
-3. `git init`
-4. `git branch -m main`
+3. `cp ../../templates/.gitignore .gitignore`
+4. `git init`
+5. `git branch -m main`
 
 ワークスペース側はホワイトリスト運用なので、各プロジェクトは独立リポジトリで管理する。
 - **MUST create new projects under `./projects/{project-title}`. NEVER create projects outside this directory.**
+- **MUST copy `templates/.gitignore` into every new project. NEVER skip this step. NEVER remove the secrets section from .gitignore.**
 - **MUST initialize each project as an independent git repository. NEVER commit project files to the workspace repo.**
