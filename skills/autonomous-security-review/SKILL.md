@@ -5,32 +5,48 @@ description: Non-interactive security review of codebases using frontier AI via 
 
 # Autonomous Security Review Skill
 
-## いつ使う
-- 公開前のセキュリティ監査を求められたとき
-- 脆弱性チェックの依頼が来たとき
-- リポジトリ全体/差分/特定ディレクトリの安全性を短時間で洗い出したいとき
+## When to use
+- Pre-release security audits
+- Vulnerability checks on request
+- Quick safety scan of a whole repo, a diff, or a specific directory
 
-## 使う前の確認（必須）
-1. **コマンド名と場所**を確認する
-   - `command -v codex` で確認
-2. **監査範囲**を合意する
-   - `リポジトリ全体` / `差分のみ` / `特定ディレクトリ`
+## Pre-flight gate (MUST pass before execution)
 
-## 基本フロー
-1. 対象ディレクトリを決める
-2. 非対話でレビューを実行する
-3. 重要度順に指摘を要約し、再現手順や対策案があれば添える
-4. 公開方針に従い、監査完了後に Public 公開する
+Run ALL of the following. If ANY fails, STOP and report the failure.
 
-## 実行コマンド例
-- 最重要コマンド（非対話レビュー）
-  - `codex exec -C <project-dir> --yolo "/review"`
-- Gitリポジトリではない場合
-  - `codex exec -C <project-dir> --yolo "/review skip-git-repo-check"`
+| Step | Command | Pass condition |
+|------|---------|----------------|
+| codex exists | `command -v codex` | exit 0 |
+| static checks pass | project-specific lint / type-check command | exit 0 |
+| tests pass | project-specific test command | exit 0 |
 
-## Prohibited (English)
+If you do not know the lint/type-check/test commands for the project, look for `Makefile`, `package.json`, `pyproject.toml`, `Cargo.toml`, or equivalent. If none exist, STOP and report that no test commands were found.
+
+## Execution
+
+You MUST call the command exactly as shown below. The only parts you fill in are the two variables.
+
+**Variables you decide:**
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `PROJECT_DIR` | Absolute path to the project directory to review | `/home/user/projects/my-app` |
+| `GIT_FLAG` | Empty string if the directory is a git repo. Otherwise the literal string ` skip-git-repo-check` (with leading space). | `` or ` skip-git-repo-check` |
+
+**Fixed command (do not modify the structure):**
+
+```
+codex exec --yolo -C ${PROJECT_DIR} "/review${GIT_FLAG}"
+```
+
+Everything else in the command is a literal. Do not add, remove, or change any flags or subcommands.
+
+## After execution
+1. **Report MUST be written in the user's language.** Match the language the user used in their request.
+2. Summarize findings by severity; include reproduction steps and mitigations where possible
+3. Follow the publication policy — publish as Public only after the review is complete
+
+## Prohibited
 - MUST NOT publish as Public before completing the review
-- MUST NOT run the review when static checks or automated tests are not passing
-
-## 迷ったら
-「ごめん、ちょっと迷っちゃって 監査範囲と認証の前提をもう一度確認していい？」
+- MUST NOT add, remove, or change any flags beyond the two variables above
+- MUST NOT skip the pre-flight gate
