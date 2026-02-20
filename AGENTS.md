@@ -44,6 +44,29 @@
 - 実装できたら、パスしたテストを短く列挙する
 - 迷いが出たら、候補を列挙して確認を取る
 
+## Issue / PR 運用ルール
+
+### 2階層の使い分け
+- **ワークスペース (picoclaw-workspace)**: 司令塔。横断タスク・方針・進捗管理を置く。HEARTBEAT.md の `#issue:` 同期で管理。
+- **プロジェクト (`./projects/*`)**: 実装タスク・バグ・機能要望を置く。他環境 (GitHub Copilot, clone先) から分散対応できるようにする。
+
+### Issue 作成の目安
+- 1つの issue = 1つの完結した作業単位にする
+- 「何をしたら完了か」が明確に書けない場合は、先に分割する
+- 探索・調査フェーズの結果を issue にまとめてから実装 issue を切るのでもよい
+
+### タスクの取り合い防止（共通ルール）
+- 作業を始める前に `gh issue list -a @me` で自分の担当を確認する
+- 着手時は必ず自分を assignee に設定する: `gh issue edit <number> --add-assignee @me`
+- **assignee が付いている issue は他のエージェント/環境が着手してはならない**
+- 完了したら issue を close する。途中で手放す場合は assignee を外す
+- **NEVER start work on an issue that already has an assignee. NEVER remove another agent's assignment.**
+
+### PR
+- PR を使うかどうかはリポジトリの branch protection 設定に従う
+- protection がなければ直接 main に push してよい
+- protection があれば PR を作成してレビュー/マージフローに従う
+
 ## 公開前の必須ルール（エージェント用）
 - Public 公開の前に `autonomous-security-review` を必ず実行する
 - **NEVER push to a public repository without running `autonomous-security-review` first. No exceptions.**
@@ -51,6 +74,13 @@
 ## 新規プロジェクト手順（エージェント用）
 基本の場所は `./projects/{project-title}` を使う。
 
+### マルチレポ方針
+- プロジェクトは原則 **1プロジェクト = 1リポジトリ** で作る（マルチレポ）
+- マルチレポにすることで、異なる環境・エージェントが別プロジェクトを並行して clone・作業できる
+- issue / PR / branch protection もプロジェクト単位で独立管理できる
+- モノレポは明示的に指示があった場合のみ採用する
+
+### 手順
 1. `mkdir -p projects/<project-title>`
 2. `cd projects/<project-title>`
 3. `cp ../../templates/.gitignore .gitignore`

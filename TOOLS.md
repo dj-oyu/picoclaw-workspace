@@ -64,5 +64,10 @@
 - **NEVER write plain JavaScript (.js/.mjs/.cjs).** Always use TypeScript (.ts/.mts/.cts).
 - These rules apply unconditionally — including retries after timeouts or errors.
 
+### GitHub CLI (`gh`)
+- GitHub操作（issue, PR, release, repo）はすべて `gh` を使う
+- 例: `gh issue create`, `gh pr create`, `gh issue list`, `gh pr checkout`
+- **NEVER use raw GitHub API calls or manual browser operations when `gh` can do it.**
+
 ## 現時点の制約
 - 特になし
