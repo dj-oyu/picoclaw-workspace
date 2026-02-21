@@ -18,7 +18,8 @@
 - 依存管理: `uv`
 - 追加: `uv add <package>`
 - 実行: `uv run <script.py>` または `uv run -m <module>`
-- リンター/フォーマッター: `ruff`（導入済みなら `uv run ruff check .` / `uv run ruff format .`）
+- リンター/フォーマッター: `ruff`（`uv run ruff check .` / `uv run ruff format .`）
+- 型チェッカー: `ty`（`uv run ty check` / `uvx ty check`）
 - **NEVER use `pip` or bare `python`. Always go through `uv`.**
 
 #### Command Substitution Rules
@@ -28,6 +29,7 @@
 - ~~`python script.py`~~ → `uv run script.py` — MUST run through uv
 - ~~`python -m pytest`~~ → `uv run -m pytest` — MUST run through uv
 - ~~`python -m <module>`~~ → `uv run -m <module>` — MUST run through uv
+- ~~`mypy`~~ → `uv run ty check` — MUST use ty for type checking
 
 ### TypeScript
 - 依存管理: `pnpm` か `bun`
