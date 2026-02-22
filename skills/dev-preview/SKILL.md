@@ -35,7 +35,7 @@ localhost:PORT (dev server)
 - The dev server only needs to bind to **localhost** — it is never exposed directly to the internet
 - picoclaw's reverse proxy handles the internet-facing HTTPS
 - The Mini App frontend sees API paths as `/miniapp/dev/api/...` — the `/miniapp/dev` prefix is stripped before forwarding
-- For CRUD apps, set the API base URL to `/miniapp/dev` in the frontend code
+- **fetch/XHR are auto-rewritten**: The proxy injects a script into HTML responses that patches `fetch()` and `XMLHttpRequest.open()` to add the `/miniapp/dev` prefix to absolute paths — no manual base URL configuration needed
 
 ## When to use
 - User asks to preview/test a web app, API, or HTML page being developed
@@ -123,6 +123,32 @@ dev_preview(action="stop")
 - Output kept in a **32 KB ring buffer** (most recent bytes)
 - Maximum **10** concurrent background processes
 - Exited processes remain visible until explicitly killed
+
+## Pitfalls / 落とし穴
+
+### Path rewriting (パスリライト)
+
+The dev server runs at `/` but is proxied under `/miniapp/dev/`. The reverse proxy **automatically injects a `<script>`** into HTML responses that patches `fetch()` and `XMLHttpRequest.open()` so that absolute paths like `/api/items` are rewritten to `/miniapp/dev/api/items`.
+
+- **Covered automatically**: `fetch("/api/items")`, `xhr.open("GET", "/data")` — these are patched at runtime.
+- **NOT rewritten automatically**: HTML attribute URLs such as `<img src="/img/logo.png">`, `<link href="/style.css">`, `<a href="/page">`. Use **relative paths** (`img/logo.png`, `./style.css`) in your frontend code.
+- URLs that already start with `/miniapp/dev` or `//` (protocol-relative) are left untouched to prevent double-rewriting.
+
+### WebSocket not supported
+
+`httputil.ReverseProxy` does **not** transparently proxy WebSocket connections. If your dev server uses WebSocket (e.g., Vite HMR), it will not work through the proxy. Use polling or SSE as alternatives.
+
+### Static asset absolute paths
+
+Any `src="/..."` or `href="/..."` in the HTML will be resolved by the browser relative to the domain root, **not** `/miniapp/dev/`. The injected script only patches `fetch` and `XHR`, not DOM attribute resolution.
+
+**Recommendation**: Use relative paths in all HTML attributes (e.g., `src="./assets/logo.png"` instead of `src="/assets/logo.png"`).
+
+### SPA routing
+
+If your SPA uses `history.pushState("/page")`, the browser URL becomes `/page` which is outside the `/miniapp/dev/` mount. Navigating to it will hit picoclaw's own routes instead of the dev server.
+
+**Recommendation**: Use **hash routing** (`/#/page`) to keep all navigation within the iframe's current path.
 
 ## Prohibited
 - MUST NOT use ports below 1024
