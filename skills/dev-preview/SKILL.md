@@ -18,10 +18,14 @@ description: Start a dev server for in-progress code and expose it through the M
 
 ## Starting the dev server
 Choose the right command based on the project:
-- Python: `python3 -m http.server PORT &`
-- Node.js: `npx serve -l PORT &` or `node server.js &`
+- Python (FastAPI): `uv run fastapi dev --port PORT &`
+- Python (Flask): `uv run flask run --port PORT &`
+- Python (Django): `uv run python manage.py runserver PORT &`
+- Bun (Hono): `bun run --hot src/index.ts &`
+- Bun (Elysia): `bun run --hot src/index.ts &`
+- Bun (Next.js): `bun run next dev --port PORT &`
 - Go: `go run . &`
-- Static HTML: `python3 -m http.server PORT &`
+- Static HTML: `uv run python -m http.server PORT &`
 
 Use a port in the range 3000-9000. Append `&` to background the process.
 
