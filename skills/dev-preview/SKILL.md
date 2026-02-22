@@ -24,7 +24,9 @@ Choose the right command based on the project:
 - Bun (Hono): `bun run --hot src/index.ts &`
 - Bun (Elysia): `bun run --hot src/index.ts &`
 - Bun (Next.js): `bun run next dev --port PORT &`
-- Go: `go run . &`
+- Go (Echo): `go run . &`
+- Go (Gin): `go run . &`
+- Go (Chi): `go run . &`
 - Static HTML: `uv run python -m http.server PORT &`
 
 Use a port in the range 3000-9000. Append `&` to background the process.
