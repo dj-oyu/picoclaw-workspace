@@ -14,11 +14,23 @@ description: Use Google's external LLM to retrieve or verify information that is
 1. **コマンド名と場所**を確認する  
    - `command -v gemini` などで確認  
 
+## モデル選択
+`-m` オプションで目的に合ったモデルを選ぶ。
+
+| 選択肢 | モデルID | 特徴 |
+|--------|----------|------|
+| フロンティア | `gemini-3.1-pro-preview` | 最高精度。複雑な推論・分析向き |
+| 高速蒸留 | `gemini-3-flash-preview` | 低レイテンシ。単純な事実確認向き |
+
+- 精度重視・複雑な質問 → `-m gemini-3.1-pro-preview`
+- 速度重視・簡単な質問 → `-m gemini-3-flash-preview`
+- 迷ったらデフォルト（`-m` 省略）でOK
+
 ## 基本フロー
 1. `gemini --help` で使い方とオプションを把握
-2. 非対話実行の基本形は `gemini --prompt "質問"`
+2. 非対話実行の基本形は `gemini -m <モデル> --prompt "質問"`
 3. ユーザー合意済みの目的に限定して実行
-3. 出力は短く要約して本体に反映
+4. 出力は短く要約して本体に反映
 
 ## プロンプトのスタイル指定（例）
 - 単純な事実確認: `"<質問> 3行にまとめて"`
