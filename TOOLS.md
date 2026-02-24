@@ -67,9 +67,61 @@
 - These rules apply unconditionally — including retries after timeouts or errors.
 
 ### GitHub CLI (`gh`)
-- GitHub操作（issue, PR, release, repo）はすべて `gh` を使う
-- 例: `gh issue create`, `gh pr create`, `gh issue list`, `gh pr checkout`
+- Use `gh` for ALL GitHub operations (issues, PRs, releases, repos, etc.)
 - **NEVER use raw GitHub API calls or manual browser operations when `gh` can do it.**
 
-## 現時点の制約
-- 特になし
+#### Cheatsheet
+
+| Category | Command | Description |
+|----------|---------|-------------|
+| **Repo** | `gh repo clone <owner/repo>` | Clone a repo |
+| | `gh repo view [owner/repo]` | View repo details |
+| | `gh repo create <name> --public/--private` | Create a new repo |
+| | `gh repo gitignore view <template>` | View a .gitignore template (e.g. `Go`, `Python`, `Node`) |
+| | `gh repo gitignore list` | List available .gitignore templates |
+| **Issue** | `gh issue list` | List issues |
+| | `gh issue create --title "..." --body "..."` | Create an issue |
+| | `gh issue view <num>` | View issue details |
+| | `gh issue close <num>` | Close an issue |
+| **PR** | `gh pr list` | List PRs |
+| | `gh pr create --title "..." --body "..."` | Create a PR |
+| | `gh pr checkout <num>` | Check out a PR locally |
+| | `gh pr view <num>` | View PR details |
+| | `gh pr merge <num>` | Merge a PR |
+| **Search** | `gh search repos <query>` | Search repositories |
+| | `gh search issues <query>` | Search issues across GitHub |
+| | `gh search prs <query>` | Search pull requests |
+| **Actions** | `gh run list` | List workflow runs |
+| | `gh run view <id>` | View a workflow run |
+| | `gh run watch <id>` | Watch a run in progress |
+| **Misc** | `gh api <endpoint>` | Call any GitHub REST/GraphQL API |
+| | `gh gist create <file>` | Create a gist |
+| | `gh release create <tag>` | Create a release |
+
+**Tips**:
+- Add `--json <fields>` to most commands for machine-readable output (e.g. `gh issue list --json number,title`)
+- Use `--jq <expr>` to filter JSON output (e.g. `gh pr list --json number,title --jq '.[].title'`)
+- `gh browse` opens the repo in the browser; `gh browse <num>` opens an issue/PR
+
+## Picoclaw ExecTool Guard
+
+Picoclaw's ExecTool has a built-in security guard (`defaultDenyPatterns`) that **blocks commands matching certain patterns** before they reach the shell. These blocks are hard errors — the command is never executed.
+
+### Git-specific blocks
+| Pattern | What it catches |
+|---------|----------------|
+| `git push` | Any push to remote (use `gh` for PR-based workflows instead) |
+| `git force` | Force operations (e.g. `git force-push` aliases) |
+
+### Other blocked categories (summary)
+| Category | Examples |
+|----------|----------|
+| Destructive file ops | `rm -rf`, `del /f`, `rmdir /s`, `dd if=`, `format`/`mkfs` |
+| Privilege escalation | `sudo`, `chmod 0755`, `chown` |
+| Process control | `pkill`, `killall`, `kill -9`, `shutdown`/`reboot` |
+| Shell injection vectors | `$(...)`, `` `...` ``, `| sh`, `| bash`, `eval`, `source *.sh`, `<< EOF` |
+| Remote code execution | `curl ... | sh`, `wget ... | bash`, `ssh ...@` |
+| Package managers (global) | `npm install -g`, `pip install --user`, `apt install`, `yum install` |
+| Container escape | `docker run`, `docker exec` |
+
+> **Note**: These deny patterns can be disabled per-project via picoclaw config (`tools.exec.enableDenyPatterns: false`), but the defaults are intentionally strict.
