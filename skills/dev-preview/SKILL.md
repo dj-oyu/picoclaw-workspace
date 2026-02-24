@@ -29,13 +29,13 @@ localhost:PORT (dev server)
 **Request path**: User opens Dev tab in Mini App → iframe loads `/miniapp/dev/` → picoclaw reverse proxy → `localhost:PORT`
 
 **What works**: All HTTP methods (GET/POST/PUT/DELETE/PATCH), JSON APIs, form submissions, static files, SSE
-**What doesn't work**: WebSocket (reverse proxy limitation), non-HTTP protocols
+**What doesn't work**: WebSocket (reverse proxy limitation), non-HTTP protocols, **external domain loading** (Telegram Mini App sandbox blocks cross-origin scripts/styles/images)
 
 **Key points**:
 - The dev server only needs to bind to **localhost** — it is never exposed directly to the internet
 - picoclaw's reverse proxy handles the internet-facing HTTPS
 - The Mini App frontend sees API paths as `/miniapp/dev/api/...` — the `/miniapp/dev` prefix is stripped before forwarding
-- **fetch/XHR are auto-rewritten**: The proxy injects a script into HTML responses that patches `fetch()` and `XMLHttpRequest.open()` to add the `/miniapp/dev` prefix to absolute paths — no manual base URL configuration needed
+- `fetch()`/`XHR` absolute paths are auto-rewritten by an injected script — no manual base URL needed
 
 ## When to use
 - User asks to preview/test a web app, API, or HTML page being developed
@@ -53,6 +53,9 @@ localhost:PORT (dev server)
 
 3. dev_preview(action="start", target="http://localhost:3000", name="frontend")
    → Dev preview started
+
+4. exec(command="bun run skills/dev-preview/scripts/validate-html-paths.ts http://localhost:3000")
+   → OK — 1 URL(s) checked, no absolute path violations.
 ```
 
 ## Flow
@@ -60,7 +63,8 @@ localhost:PORT (dev server)
 2. Start the dev server with `exec(command="...", background=true)`
 3. Wait for readiness with `bg_monitor(action="watch", bg_id="bg-1", pattern="...")`
 4. Register the proxy with `dev_preview(action="start", target="http://localhost:PORT")`
-5. Tell the user to check the Dev tab in the Mini App
+5. Run the path validator (see "Path validation" section below) — fix violations until exit 0
+6. Tell the user to check the Dev tab in the Mini App
 
 ## Starting the dev server
 
@@ -98,6 +102,18 @@ Use the `dev_preview` tool:
 - Check: `dev_preview(action="status")`
 - Stop: `dev_preview(action="stop")`
 
+## Path validation
+
+After the dev server is running, **always** run the validator before telling the user:
+
+```
+exec(command="bun run skills/dev-preview/scripts/validate-html-paths.ts http://localhost:PORT")
+```
+
+- Exit 0 → pass. Proceed to tell the user.
+- Exit 1 → violations found. Follow each `FIX:` line in the output, then re-run until exit 0.
+- Exit 2 → fetch error. Check that the dev server is running.
+
 ## Monitoring and debugging
 
 | Call | Purpose |
@@ -126,29 +142,13 @@ dev_preview(action="stop")
 
 ## Pitfalls / 落とし穴
 
-### Path rewriting (パスリライト)
-
-The dev server runs at `/` but is proxied under `/miniapp/dev/`. The reverse proxy **automatically injects a `<script>`** into HTML responses that patches `fetch()` and `XMLHttpRequest.open()` so that absolute paths like `/api/items` are rewritten to `/miniapp/dev/api/items`.
-
-- **Covered automatically**: `fetch("/api/items")`, `xhr.open("GET", "/data")` — these are patched at runtime.
-- **NOT rewritten automatically**: HTML attribute URLs such as `<img src="/img/logo.png">`, `<link href="/style.css">`, `<a href="/page">`. Use **relative paths** (`img/logo.png`, `./style.css`) in your frontend code.
-- URLs that already start with `/miniapp/dev` or `//` (protocol-relative) are left untouched to prevent double-rewriting.
-
 ### WebSocket not supported
 
-`httputil.ReverseProxy` does **not** transparently proxy WebSocket connections. If your dev server uses WebSocket (e.g., Vite HMR), it will not work through the proxy. Use polling or SSE as alternatives.
-
-### Static asset absolute paths
-
-Any `src="/..."` or `href="/..."` in the HTML will be resolved by the browser relative to the domain root, **not** `/miniapp/dev/`. The injected script only patches `fetch` and `XHR`, not DOM attribute resolution.
-
-**Recommendation**: Use relative paths in all HTML attributes (e.g., `src="./assets/logo.png"` instead of `src="/assets/logo.png"`).
+`httputil.ReverseProxy` does **not** proxy WebSocket. Use polling or SSE instead.
 
 ### SPA routing
 
-If your SPA uses `history.pushState("/page")`, the browser URL becomes `/page` which is outside the `/miniapp/dev/` mount. Navigating to it will hit picoclaw's own routes instead of the dev server.
-
-**Recommendation**: Use **hash routing** (`/#/page`) to keep all navigation within the iframe's current path.
+Use **hash routing** (`/#/page`) — `history.pushState` paths escape the `/miniapp/dev/` mount.
 
 ## Prohibited
 - MUST NOT use ports below 1024
