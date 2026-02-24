@@ -116,12 +116,6 @@ Picoclaw's ExecTool has a built-in security guard (`defaultDenyPatterns`) that *
 ### Other blocked categories (summary)
 | Category | Examples |
 |----------|----------|
-| Destructive file ops | `rm -rf`, `del /f`, `rmdir /s`, `dd if=`, `format`/`mkfs` |
-| Privilege escalation | `sudo`, `chmod 0755`, `chown` |
-| Process control | `pkill`, `killall`, `kill -9`, `shutdown`/`reboot` |
-| Shell injection vectors | `$(...)`, `` `...` ``, `| sh`, `| bash`, `eval`, `source *.sh`, `<< EOF` |
-| Remote code execution | `curl ... | sh`, `wget ... | bash`, `ssh ...@` |
-| Package managers (global) | `npm install -g`, `pip install --user`, `apt install`, `yum install` |
-| Container escape | `docker run`, `docker exec` |
-
-> **Note**: These deny patterns can be disabled per-project via picoclaw config (`tools.exec.enableDenyPatterns: false`), but the defaults are intentionally strict.
+| Destructive / process | `rm -rf`, `kill -9`, `shutdown` etc |
+| Privilege / system | `sudo`, `apt install`, `docker run` etc |
+| Injection / RCE | `eval`, `$(...)`, `curl \| sh`, `ssh` etc |
