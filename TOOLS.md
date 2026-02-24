@@ -13,13 +13,13 @@
 - ML/推論ならPyTorchや周辺エコシステムの都合でPythonを優先することがある
 - I/O多めで並行性が重要ならGo/Rust、スクリプト用途ならPython/シェル
 
-## 言語ごとの推奨スタック
+## Recommended Stack per Language
 ### Python
-- 依存管理: `uv`
-- 追加: `uv add <package>`
-- 実行: `uv run <script.py>` または `uv run -m <module>`
-- リンター/フォーマッター: `ruff`（`uv run ruff check .` / `uv run ruff format .`）
-- 型チェッカー: `ty`（`uv run ty check` / `uvx ty check`）
+- Deps: `uv`
+- Add: `uv add <package>`
+- Run: `uv run <script.py>` or `uv run -m <module>`
+- Lint/Format: `ruff` (`uv run ruff check .` / `uv run ruff format .`)
+- Type check: `ty` (`uv run ty check` / `uvx ty check`)
 - **NEVER use `pip` or bare `python`. Always go through `uv`.**
 
 #### Command Substitution Rules
@@ -32,12 +32,12 @@
 - ~~`mypy`~~ → `uv run ty check` — MUST use ty for type checking
 
 ### TypeScript
-- 依存管理: `pnpm` か `bun`
-- 追加: `pnpm add <pkg>` / `bun add <pkg>`
-- 実行: `pnpm <script>` / `bun <script>`
-- 単発実行: `pnpx <tool>` / `bunx <tool>`
-- 例: `pnpx tsc --noEmit` / `bunx eslint .`
-- リンター/フォーマッター: `eslint` / `prettier`（ある場合は `pnpx` / `bunx` で実行）
+- Deps: `pnpm` or `bun`
+- Add: `pnpm add <pkg>` / `bun add <pkg>`
+- Run: `pnpm <script>` / `bun <script>`
+- One-off: `pnpx <tool>` / `bunx <tool>`
+- e.g. `pnpx tsc --noEmit` / `bunx eslint .`
+- Lint/Format: `eslint` / `prettier` (run via `pnpx` / `bunx`)
 - **NEVER use `npm`, `npx`, or bare `node`. Always use `pnpm`/`bun` instead.**
 - **NEVER write JavaScript (.js/.mjs/.cjs). Always use TypeScript (.ts/.mts/.cts).**
 
@@ -50,13 +50,13 @@
 - ~~creating `.js`/`.mjs`/`.cjs`~~ → create `.ts`/`.mts`/`.cts` — MUST write TypeScript, NEVER JavaScript
 
 ### Go
-- モジュール: `go mod init`, `go get`
-- 実行: `go run`, `go test`, `go build`
-- フォーマッター: `gofmt -w <file>`
+- Module: `go mod init`, `go get`
+- Run: `go run`, `go test`, `go build`
+- Format: `gofmt -w <file>`
 
-### シェル
-- 短命・単発用途に限定
-- 破壊的操作は必ず事前確認
+### Shell
+- Short-lived / one-off tasks only
+- Always confirm before destructive ops
 
 ## Prohibited Commands
 - **NEVER use `pip` or `pip install` directly.** Always use `uv add` instead.
