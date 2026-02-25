@@ -31,3 +31,7 @@ This file contains tasks for the heartbeat service to check periodically.
 ---
 
 Add your heartbeat tasks below this line:
+- bun,elysia,htmxを学習中 -- `bun-elysia-htmx-template` プロジェクトテンプレート
+- とにかくいろいろなプロジェクト(behtx-*)を作り、開発のノウハウを獲得する 最後に各プロジェクトで得た知識を統合
+- 世界一わかりやすい、**BEHTXの始め方**の本を作ることを目指す
+
