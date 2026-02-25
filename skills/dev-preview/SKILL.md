@@ -58,13 +58,23 @@ localhost:PORT (dev server)
    → OK — 1 URL(s) checked, no absolute path violations.
 ```
 
-## Flow
-1. Write or modify the server/web code as requested
-2. Start the dev server with `exec(command="...", background=true)`
-3. Wait for readiness with `bg_monitor(action="watch", bg_id="bg-1", pattern="...")`
-4. Register the proxy with `dev_preview(action="start", target="http://localhost:PORT")`
-5. Run the path validator (see "Path validation" section below) — fix violations until exit 0
-6. Tell the user to check the Dev tab in the Mini App
+## Steps — follow in order, do not skip
+
+1. Write or modify the server/web code
+2. Start the dev server:
+   `exec(command="<start command>", background=true)`
+   Note the `bg_id` returned (e.g. `bg-1`)
+3. Wait for readiness:
+   `bg_monitor(action="watch", bg_id="bg-1", pattern="ready|listening|Serving|localhost")`
+   If timeout → `bg_monitor(action="tail", bg_id="bg-1")` to diagnose
+4. Register the reverse proxy:
+   `dev_preview(action="start", target="http://localhost:PORT")`
+5. Run the validator — **required, do not skip**:
+   `exec(command="bun run skills/dev-preview/scripts/validate-html-paths.ts http://localhost:PORT")`
+   - Exit 0 → go to step 6
+   - Exit 1 → fix every `FIX:` line shown, then re-run step 5
+   - Exit 2 → server not running, go back to step 2
+6. Tell the user: "Dev tab in the Mini App でプレビューできます"
 
 ## Starting the dev server
 

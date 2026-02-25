@@ -11,19 +11,20 @@
  * Checks:
  *  1. Absolute paths in src/href (breaks under /miniapp/dev/ reverse proxy)
  *  2. External domain URLs in src/href (blocked by Telegram Mini App sandbox)
+ *  3. <base href> elements (sets document base URL, breaks reverse proxy path stripping)
  *
  * Exit code: 0 = pass, 1 = violations found, 2 = usage error / fetch failure
  */
 
 const ATTRS = ["src", "href", "action", "poster", "data"] as const;
 
-// Matches attr="value" or attr='value' in HTML tags
+// Captures tag name + attr name + value; processes per-line
 const TAG_ATTR_RE = new RegExp(
-  `\\b(${ATTRS.join("|")})\\s*=\\s*(?:"([^"]*?)"|'([^']*?)')`,
+  `<(\\w+)[^>]*?\\b(${ATTRS.join("|")})\\s*=\\s*(?:"([^"]*?)"|'([^']*?)')`,
   "gi",
 );
 
-type ViolationKind = "absolute-path" | "external-domain";
+type ViolationKind = "absolute-path" | "external-domain" | "base-url";
 
 interface Violation {
   url: string;
@@ -36,8 +37,10 @@ interface Violation {
 function classifyViolation(value: string): ViolationKind | null {
   // External URLs: https://..., http://..., //cdn.example.com/...
   if (/^(https?:)?\/\//.test(value)) return "external-domain";
-  // Absolute path: /foo (but not /miniapp/dev/...)
-  if (value.startsWith("/") && !value.startsWith("/miniapp/dev")) return "absolute-path";
+  // Absolute path: /foo — all absolute paths break under the reverse proxy.
+  // Do NOT whitelist /miniapp/dev/...: if a base URL is set to /miniapp/dev/,
+  // the dev server never receives the un-stripped path and returns 404.
+  if (value.startsWith("/")) return "absolute-path";
   return null;
 }
 
@@ -54,10 +57,18 @@ async function validate(url: string): Promise<Violation[]> {
     TAG_ATTR_RE.lastIndex = 0;
     let match: RegExpExecArray | null;
     while ((match = TAG_ATTR_RE.exec(lines[i])) !== null) {
-      const value = match[2] ?? match[3];
-      const kind = classifyViolation(value);
-      if (kind) {
-        violations.push({ url, line: i + 1, attr: match[1], value, kind });
+      const tagName = match[1].toLowerCase();
+      const attr = match[2];
+      const value = match[3] ?? match[4];
+      if (tagName === "base" && attr.toLowerCase() === "href") {
+        // <base href> changes URL resolution for the entire document.
+        // Prohibited regardless of value — use relative paths instead.
+        violations.push({ url, line: i + 1, attr, value, kind: "base-url" });
+      } else {
+        const kind = classifyViolation(value);
+        if (kind) {
+          violations.push({ url, line: i + 1, attr, value, kind });
+        }
       }
     }
   }
@@ -79,10 +90,23 @@ for (const url of urls) {
     for (const v of vs) {
       if (v.kind === "absolute-path") {
         console.error(
-          `ERROR ${v.url} line ${v.line}: ${v.attr}="${v.value}" is absolute.`,
+          `ERROR ${v.url} line ${v.line}: ${v.attr}="${v.value}" is an absolute path.`,
         );
         console.error(
-          `  FIX: Change to ${v.attr}=".${v.value}"`,
+          `  FIX: Use a relative path instead: ${v.attr}=".${v.value}"`,
+        );
+        console.error(
+          `  NOTE: If your framework has a base URL config (e.g. Vite "base:", <base href>), remove it.`,
+        );
+      } else if (v.kind === "base-url") {
+        console.error(
+          `ERROR ${v.url} line ${v.line}: <base href="${v.value}"> sets a document base URL.`,
+        );
+        console.error(
+          `  FIX: Remove the <base> tag and its corresponding framework config (e.g. Vite "base:").`,
+        );
+        console.error(
+          `  NOTE: A base URL causes the reverse proxy to strip the prefix the dev server still expects, breaking all asset paths.`,
         );
       } else {
         console.error(
@@ -102,7 +126,7 @@ for (const url of urls) {
 
 if (total > 0) {
   console.error(
-    `\n${total} violation(s). Fix absolute paths (use ./) and remove external domain URLs.`,
+    `\n${total} violation(s). Fix all violations above — use relative paths (./) and remove <base href> / framework base URL configs.`,
   );
   process.exit(1);
 } else {
