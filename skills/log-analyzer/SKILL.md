@@ -1,6 +1,6 @@
 ---
 name: log-analyzer
-description: "Analyze application logs for errors, patterns, and anomalies. Use when user asks about errors, system health, log analysis, or 'check the logs'."
+description: "Analyze picoclaw application logs. Use proactively after any code change, deployment, or server restart — do not wait for the user to ask. Also use when debugging unexpected behavior, after API calls fail, or when the user mentions errors or system health."
 ---
 
 # log-analyzer Skill
@@ -44,3 +44,20 @@ When reporting findings:
 | "Show me everything" | `level=DEBUG, limit=50` |
 | "Find timeout errors" | `level=ERROR, query=timeout` |
 | "System health check" | `level=WARN, limit=30` then summarize |
+
+## Report Format
+
+分析後は必ず以下の形式で出力する:
+
+**ログ調査結果**
+- 調査範囲: WARN以上 / 直近N件
+- エラー: X件　警告: Y件
+- 影響コンポーネント: [一覧 または「なし」]
+
+**検出された問題** (なければ省略)
+- [component] `エラーパターン` — N回発生、最初: T / 最後: T
+  → 推定原因 / 対応案
+
+**判定**
+- 異常なし — 対応不要
+- 要対応 — 上記の問題を確認してください
